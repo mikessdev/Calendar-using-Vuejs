@@ -13,4 +13,7 @@ import Header from '@/components/Header.vue'
 </template>
 
 <style scoped>
+.app{
+  background-color: var(--pontotel-white-gray);
+}
 </style>

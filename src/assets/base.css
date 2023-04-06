@@ -2,7 +2,9 @@
 :root {
   --pontotel-red: #ff6854;
   --pontotel-light-blue: #59c2cf;
+  --pontotel-light-blue-40: rgba(103,181,211 .4)
   --pontotel-orange: #ffd979;
+  --pontotel-white-gray: #f8f8fa;
 }
 
 @font-face{

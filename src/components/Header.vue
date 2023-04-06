@@ -8,7 +8,7 @@
 
 <style scoped>
     #header{
-        background-color: var(--pontotel-blue);
+        background-color: var(--pontotel-light-blue);
         width: 100vw;
         height: 60px;
     }
