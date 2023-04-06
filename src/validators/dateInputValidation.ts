@@ -1,5 +1,5 @@
 export function yearInputValidation(year: number){
-    return '';
+    return year < 1950 ? "Ano inválido" : '';
 }
 
 export function monthInputValidation(month: number ){

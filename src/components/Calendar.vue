@@ -51,8 +51,6 @@ const props = defineProps({
   }
 });
 
-
-
 function checkHoliday(date: Date) {
     let dateStr: string;
     let monthStr: string;
@@ -144,24 +142,24 @@ function separatingDaysIntoWeeks(days: Array<Date>) {
             <div id="input-container">
                 <div class="input-wrapper">
                     <div>
-                        <label class="input-label" for="year">Ano:</label>
-                        <input type="number" class="custom-input" id="year" v-model="viewState.year.value" @input="viewState.year.validation" />
+                        <label :class="(viewState.year.error ? 'input-label-erro' : 'input-label')" for="year">Ano:</label>
+                        <input type="number" :class="(viewState.year.error ? 'custom-input-error' : 'custom-input')" v-model="viewState.year.value" @input="viewState.year.validation" />
                     </div>
-                    <label v-if="viewState.year.error" class="inputErro">{{ viewState.year.error }}</label>
+                    <label v-if="viewState.year.error" class="label-error">{{ viewState.year.error }}</label>
                 </div>
                 <div class="input-wrapper">
                     <div>
-                        <label class="input-label" for="month">Mês:</label>
-                        <input type="number" class="custom-input" id="month" v-model="viewState.month.value" @input="viewState.month.validation" />     
+                        <label :class="(viewState.month.error ? 'input-label-erro' : 'input-label')" for="month">Mês:</label>
+                        <input type="number" :class="(viewState.month.error ? 'custom-input-error' : 'custom-input')" id="month" v-model="viewState.month.value" @input="viewState.month.validation" />     
                     </div>
-                    <label v-if="viewState.month.error" class="inputErro">{{ viewState.month.error }}</label>
+                    <label v-if="viewState.month.error" class="label-error">{{ viewState.month.error }}</label>
                 </div>
                 <div class="input-wrapper">
                     <div>
-                        <label class="input-label" for="day">Dia:</label>
-                        <input type="number" class="custom-input" id="day" v-model="viewState.day.value" @input="viewState.day.validation" />
+                        <label :class="(viewState.day.error ? 'input-label-erro' : 'input-label')" for="day">Dia:</label>
+                        <input type="number" :class="(viewState.day.error ? 'custom-input-error' : 'custom-input')" id="day" v-model="viewState.day.value" @input="viewState.day.validation" />
                     </div>
-                    <label v-if="viewState.day.error" class="inputErro">{{ viewState.day.error }}</label>
+                    <label v-if="viewState.day.error" class="label-error">{{ viewState.day.error }}</label>
                 </div>
             </div>
         </div>
@@ -237,7 +235,8 @@ th {
 }
 
 .holiday {
-    background-color: yellow;
+    background-color: var(--pontotel-orange);
+    border-radius: 8px;
 }
 
 
@@ -247,8 +246,23 @@ th {
     margin-bottom: 20px;
 }
 
-.inputErro{
-    color: red;
+.custom-input-error{
+    color: var(--pontotel-red);
+    width: 60px;
+    padding: 10px;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    outline: none;
+    background-color: transparent;
+    font-size: 16px;
+}
+.label-error{
+    color: var(--pontotel-red);
+    width: 60px;
+    padding: 10px;
+    border: none;
+    background-color: transparent;
+    font-size: 10px;
 }
 .custom-input {
     width: 60px;
@@ -265,5 +279,10 @@ th {
     pointer-events: none;
     transition: 0.2s ease all;
     color: #777;
+}
+.input-label-erro {
+    pointer-events: none;
+    transition: 0.2s ease all;
+    color: var(--pontotel-red);
 }
 </style>
