@@ -1,54 +1,54 @@
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue';
-import {yearInputValidation, monthInputValidation, dayInputValidation} from '@/validators/dateInputValidation';
+import { computed, reactive } from "vue";
+import {
+    yearInputValidation,
+    monthInputValidation,
+    dayInputValidation,
+} from "@/validators/dateInputValidation";
 
 interface Date {
-    day: number,
-    month: number,
-    year: number,
-    isHoliday: boolean,
-    isCurrentMonth: boolean,
+    day: number;
+    month: number;
+    year: number;
+    isHoliday: boolean;
+    isCurrentMonth: boolean;
 }
-const viewState = reactive ({
+
+const viewState = reactive({
     day: {
         value: new Date().getDate(),
-        error: '',
+        error: "",
         validation: () => {
             viewState.day.error = dayInputValidation(viewState.day.value);
-        }
+        },
     },
     month: {
         value: new Date().getMonth() + 1,
-        error: '',
+        error: "",
         validation: () => {
             viewState.month.error = monthInputValidation(viewState.month.value);
-        }
+        },
     },
     year: {
         value: new Date().getFullYear(),
-        error: '',
+        error: "",
         validation: () => {
             viewState.year.error = yearInputValidation(viewState.year.value);
-        }
+        },
     },
-
-})
+});
 
 function updateCalendar() {
     // Fazer alguma ação quando o calendário for atualizado, por exemplo, atualizar dados ou fazer uma requisição
     // para obter eventos relacionados à nova data selecionada.
-    console.log("updating")
+    console.log("updating");
 }
 
-
-
-
-
 const props = defineProps({
-  holidayList: {
-    type: Array,
-    default: []
-  }
+    holidayList: {
+        type: Array,
+        default: [],
+    },
 });
 
 function checkHoliday(date: Date) {
@@ -57,22 +57,29 @@ function checkHoliday(date: Date) {
     let dayStr: string;
 
     //making data compatible with the api
-    dayStr = date.day < 10 ? '0' + date.day : '' + date.day;
-    monthStr = date.month < 10 ? '0' + date.month : '' + date.month;
-    dateStr = `${date.year}-${monthStr}-${dayStr}`
+    dayStr = date.day < 10 ? "0" + date.day : "" + date.day;
+    monthStr = date.month < 10 ? "0" + date.month : "" + date.month;
+    dateStr = `${date.year}-${monthStr}-${dayStr}`;
 
-    if(props.holidayList){
-        props.holidayList.find(element => {
-            return date.isHoliday = element.date == dateStr;
-        })
+    if (props.holidayList) {
+        props.holidayList.find((element) => {
+            return (date.isHoliday = element.date == dateStr);
+        });
         return date;
     }
 }
 
 const daysGenerator = computed(() => {
-
-    const lastDay = new Date(viewState.year.value, viewState.month.value, 0).getDate();
-    const lastDayPreviousMonth = new Date(viewState.year.value, viewState.month.value - 1, 0).getDate();
+    const lastDay = new Date(
+        viewState.year.value,
+        viewState.month.value,
+        0
+    ).getDate();
+    const lastDayPreviousMonth = new Date(
+        viewState.year.value,
+        viewState.month.value - 1,
+        0
+    ).getDate();
 
     let days = [];
 
@@ -80,7 +87,7 @@ const daysGenerator = computed(() => {
         let date = {} as Date;
 
         date.day = i;
-        date.month = viewState.month.value;
+        date.month = viewState.month.value - 1;
         date.year = viewState.month.value == 1 ? viewState.year.value - 1 : viewState.year.value;
         date.isCurrentMonth = false;
 
@@ -96,7 +103,7 @@ const daysGenerator = computed(() => {
         date.year = viewState.year.value;
         date.isCurrentMonth = true;
 
-        checkHoliday(date)
+        checkHoliday(date);
         days.push(date);
     }
 
@@ -104,7 +111,7 @@ const daysGenerator = computed(() => {
         let date = {} as Date;
 
         date.day = i;
-        date.month = viewState.month.value;
+        date.month = viewState.month.value + 1;
         date.year = viewState.month.value == 12 ? viewState.year.value + 1 : viewState.year.value;
         date.isCurrentMonth = false;
 
@@ -131,8 +138,6 @@ function separatingDaysIntoWeeks(days: Array<Date>) {
     }
     return weeks;
 }
-
-
 </script>
 
 <template>
@@ -142,24 +147,38 @@ function separatingDaysIntoWeeks(days: Array<Date>) {
             <div id="input-container">
                 <div class="input-wrapper">
                     <div>
-                        <label :class="(viewState.year.error ? 'input-label-erro' : 'input-label')" for="year">Ano:</label>
-                        <input type="number" :class="(viewState.year.error ? 'custom-input-error' : 'custom-input')" v-model="viewState.year.value" @input="viewState.year.validation" />
+                        <label :class="viewState.year.error ? 'input-label-erro' : 'input-label'" for="year">Ano:</label>
+                        <input type="number" :class="
+                            viewState.year.error ? 'custom-input-error' : 'custom-input'
+                        " v-model="viewState.year.value" @input="viewState.year.validation" />
                     </div>
-                    <label v-if="viewState.year.error" class="label-error">{{ viewState.year.error }}</label>
+                    <label v-if="viewState.year.error" class="label-error">{{
+                        viewState.year.error
+                    }}</label>
                 </div>
                 <div class="input-wrapper">
                     <div>
-                        <label :class="(viewState.month.error ? 'input-label-erro' : 'input-label')" for="month">Mês:</label>
-                        <input type="number" :class="(viewState.month.error ? 'custom-input-error' : 'custom-input')" id="month" v-model="viewState.month.value" @input="viewState.month.validation" />     
+                        <label :class="
+                            viewState.month.error ? 'input-label-erro' : 'input-label'
+                        " for="month">Mês:</label>
+                        <input type="number" :class="
+                            viewState.month.error ? 'custom-input-error' : 'custom-input'
+                        " id="month" v-model="viewState.month.value" @input="viewState.month.validation" />
                     </div>
-                    <label v-if="viewState.month.error" class="label-error">{{ viewState.month.error }}</label>
+                    <label v-if="viewState.month.error" class="label-error">{{
+                        viewState.month.error
+                    }}</label>
                 </div>
                 <div class="input-wrapper">
                     <div>
-                        <label :class="(viewState.day.error ? 'input-label-erro' : 'input-label')" for="day">Dia:</label>
-                        <input type="number" :class="(viewState.day.error ? 'custom-input-error' : 'custom-input')" id="day" v-model="viewState.day.value" @input="viewState.day.validation" />
+                        <label :class="viewState.day.error ? 'input-label-erro' : 'input-label'" for="day">Dia:</label>
+                        <input type="number" :class="
+                            viewState.day.error ? 'custom-input-error' : 'custom-input'
+                        " id="day" v-model="viewState.day.value" @input="viewState.day.validation" />
                     </div>
-                    <label v-if="viewState.day.error" class="label-error">{{ viewState.day.error }}</label>
+                    <label v-if="viewState.day.error" class="label-error">{{
+                        viewState.day.error
+                    }}</label>
                 </div>
             </div>
         </div>
@@ -178,8 +197,8 @@ function separatingDaysIntoWeeks(days: Array<Date>) {
             </thead>
             <tbody>
                 <tr v-for="week in daysGenerator" :key="week[0]">
-                    <td :class="(day.isCurrentMonth ? 'current-month' : 'no-current-month')" v-for="day in week" :key="day">
-                        <div :class="(day.isHoliday ? 'holiday' : '')">{{ day.day }}</div>
+                    <td :class="day.isCurrentMonth ? 'current-month' : 'no-current-month'" v-for="day in week" :key="day">
+                        <div :class="day.isHoliday ? 'holiday' : ''">{{ day.day }}</div>
                     </td>
                 </tr>
             </tbody>
@@ -190,26 +209,23 @@ function separatingDaysIntoWeeks(days: Array<Date>) {
 <style scoped>
 #container {
     display: flex;
-    max-width: 700px;
+    max-width: 800px;
     flex-direction: column;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
     line-height: 1.125em;
     text-align: center;
     padding-bottom: 32px;
 }
 
-h1{
+h1 {
     margin-top: 32px;
     margin-bottom: 32px;
     font-size: 32px;
 }
+
 #input-container {
     display: flex;
     margin: 0 auto;
 }
-
 
 table {
     border-collapse: collapse;
@@ -226,7 +242,7 @@ th {
 }
 
 .day-clicked {
-    background-color: rgba(103, 181, 211, .1);
+    background-color: rgba(103, 181, 211, 0.1);
     color: var(--pontotel-light-blue);
 }
 
@@ -239,14 +255,12 @@ th {
     border-radius: 8px;
 }
 
-
 /* input style */
 .input-wrapper {
-
     margin-bottom: 20px;
 }
 
-.custom-input-error{
+.custom-input-error {
     color: var(--pontotel-red);
     width: 60px;
     padding: 10px;
@@ -256,7 +270,8 @@ th {
     background-color: transparent;
     font-size: 16px;
 }
-.label-error{
+
+.label-error {
     color: var(--pontotel-red);
     width: 60px;
     padding: 10px;
@@ -264,6 +279,7 @@ th {
     background-color: transparent;
     font-size: 10px;
 }
+
 .custom-input {
     width: 60px;
     padding: 10px;
@@ -278,8 +294,9 @@ th {
 .input-label {
     pointer-events: none;
     transition: 0.2s ease all;
-    color: #777;
+    color: var(--pontotel-gray);
 }
+
 .input-label-erro {
     pointer-events: none;
     transition: 0.2s ease all;

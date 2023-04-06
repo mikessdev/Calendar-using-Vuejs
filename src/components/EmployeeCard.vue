@@ -27,19 +27,27 @@ const props = defineProps({
     <p>
       Escala semanal
     </p>
+    <div>
+      <p>Dom</p>
+      <p>Seg</p>
+      <p>Ter</p>
+      <p>Qua</p>
+      <p>Qui</p>
+      <p>Sex</p>
+      <p>Sáb</p>
+    </div>
+    <p>São esperados 8h de trabalho por dia!</p>
+    <p>São esperados 160h mensais de trabalho para o colaborador!</p>
     
   </div>
 </template>
 
 <style scoped>
   #employeeCard {
-    max-width: 300px;
     display: flex;
+    width: 300px;
+    background-color: red;
     flex-direction: column;
     align-items: center;
-    
-
-    background-color: red;
-
   }
 </style>
