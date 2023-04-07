@@ -29,6 +29,6 @@ const props = defineProps({
     height: 232px;
     border-style: solid;
     border-width: 2px;
-    border-color: var(--pontotel-red);
+    border-color: var(--pontotel-orange);
   }
 </style>

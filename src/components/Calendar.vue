@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, reactive } from "vue";
+import { computed, reactive, ref } from "vue";
 import {
     yearInputValidation,
     monthInputValidation,
@@ -13,6 +13,17 @@ interface Date {
     isHoliday: boolean;
     isCurrentMonth: boolean;
 }
+
+const props = defineProps({
+    holidayList: {
+        type: Array,
+        default: [],
+    },
+});
+
+const emit = defineEmits(["expectedDays"]);
+
+const expectedDaysValue = ref(0);
 
 const viewState = reactive({
     day: {
@@ -38,19 +49,6 @@ const viewState = reactive({
     },
 });
 
-function updateCalendar() {
-    // Fazer alguma ação quando o calendário for atualizado, por exemplo, atualizar dados ou fazer uma requisição
-    // para obter eventos relacionados à nova data selecionada.
-    console.log("updating");
-}
-
-const props = defineProps({
-    holidayList: {
-        type: Array,
-        default: [],
-    },
-});
-
 function checkHoliday(date: Date) {
     let dateStr: string;
     let monthStr: string;
@@ -70,32 +68,33 @@ function checkHoliday(date: Date) {
 }
 
 const daysGenerator = computed(() => {
-    const lastDay = new Date(
-        viewState.year.value,
-        viewState.month.value,
-        0
-    ).getDate();
-    const lastDayPreviousMonth = new Date(
-        viewState.year.value,
-        viewState.month.value - 1,
-        0
-    ).getDate();
+    const numberDaysCurrentMonth = new Date(viewState.year.value, viewState.month.value, 0).getDate();
+    const firstDayOfCurrentMonth = new Date(`${viewState.year.value}-${viewState.month.value}-1`).getDay() - 1;
+    const lastDayMonthOfPrevius = new Date(viewState.year.value,viewState.month.value - 1,0).getDate();
 
     let days = [];
 
-    for (let i = lastDayPreviousMonth - 5; i <= lastDayPreviousMonth; i++) {
-        let date = {} as Date;
+    //days of last month
+    for (let i = lastDayMonthOfPrevius-firstDayOfCurrentMonth; i <= lastDayMonthOfPrevius; i++) {
+        if(firstDayOfCurrentMonth > 0){
+            let date = {} as Date;
+            date.day = i;
+            date.month = viewState.month.value - 1;
+            date.year = viewState.month.value == 1 ? viewState.year.value - 1 : viewState.year.value;
+            date.isCurrentMonth = false;
+            checkHoliday(date);
+            days.push(date);
 
-        date.day = i;
-        date.month = viewState.month.value - 1;
-        date.year = viewState.month.value == 1 ? viewState.year.value - 1 : viewState.year.value;
-        date.isCurrentMonth = false;
-
-        checkHoliday(date);
-        days.push(date);
+        }
+         
     }
 
-    for (let i = 1; i <= lastDay; i++) {
+    //TODO
+    // expectedDaysValue.value = days.length 
+    // emit("expectedDays", expectedDaysValue.value);
+
+    //days of the current month
+    for (let i = 1; i <= numberDaysCurrentMonth; i++) {
         let date = {} as Date;
 
         date.day = i;
@@ -107,7 +106,9 @@ const daysGenerator = computed(() => {
         days.push(date);
     }
 
-    for (let i = 1; i <= 36 - lastDay; i++) {
+    //days of next month
+    let remainingSpace = 42 - days.length;
+    for (let i = 1; i <= remainingSpace ; i++) {
         let date = {} as Date;
 
         date.day = i;
@@ -265,12 +266,18 @@ th {
     width: 60px;
     padding: 10px;
     border: none;
-    border-bottom: 1px solid #ccc;
-    outline: none;
     background-color: transparent;
     font-size: 16px;
 }
 
+.custom-input {
+    width: 60px;
+    padding: 10px;
+    border: none;
+    background-color: transparent;
+    font-size: 16px;
+    color: #333;
+}
 .label-error {
     color: var(--pontotel-red);
     width: 60px;
@@ -280,16 +287,6 @@ th {
     font-size: 10px;
 }
 
-.custom-input {
-    width: 60px;
-    padding: 10px;
-    border: none;
-    border-bottom: 1px solid #ccc;
-    outline: none;
-    background-color: transparent;
-    font-size: 16px;
-    color: #333;
-}
 
 .input-label {
     pointer-events: none;

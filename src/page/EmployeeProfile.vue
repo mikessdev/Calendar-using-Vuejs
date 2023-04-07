@@ -107,23 +107,15 @@ const json = [
 
 <template>
   <div id="container">
-    <div id="separator">
       <EmployeeCard 
         employee-name="Colaborador Doguineo" 
         :employee-picture="employeePicture" 
         employee-position="Desenvolvedor" />
-    </div>
       <Calendar :holiday-list="json"/>
   </div>
 </template>
 
 <style scoped>
-#separator {
-  border-right-width: medium;
-  border-right-style: solid;
-  border-right-color: var(--pontotel-gray);
-}
-
 #container {
     display: flex;
     width: 100%;

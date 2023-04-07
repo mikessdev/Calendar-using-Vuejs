@@ -46,7 +46,6 @@ const props = defineProps({
   #employeeCard {
     display: flex;
     width: 300px;
-    background-color: red;
     flex-direction: column;
     align-items: center;
   }
