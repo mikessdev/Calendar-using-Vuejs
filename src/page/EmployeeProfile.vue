@@ -102,12 +102,17 @@ const viewState = reactive({
         picture: 'https://img.freepik.com/fotos-gratis/lindo-retrato-de-cachorro_23-2149218450.jpg',
         position: "Desenvolvedor",
         expectedHoursForDay: 8,
-        expectedHoursForMonth: 0
+        expectedHoursForMonth: 0,
+        daysOff: []
     } 
 })
 
 function handleExpectedDays(value: number){
     viewState.employee.expectedHoursForMonth = value * 8;
+}
+
+function handleDaysOff(value: Array<never>){
+    viewState.employee.daysOff = value;
 }
 </script>
 
@@ -119,7 +124,7 @@ function handleExpectedDays(value: number){
         :employee-position="viewState.employee.position" 
         :expected-hours-for-month="viewState.employee.expectedHoursForMonth"
         :expected-hours-for-day="viewState.employee.expectedHoursForDay"/>
-      <Calendar :holiday-list="json" @expected-days-for-month="handleExpectedDays"/>
+      <Calendar :days-off-list="viewState.employee.daysOff" :holiday-list="json" @expected-days-for-month="handleExpectedDays" @days-off="handleDaysOff"/>
   </div>
 </template>
 

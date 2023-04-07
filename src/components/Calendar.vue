@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, reactive, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import {
     yearInputValidation,
     monthInputValidation,
     dayInputValidation,
 } from "@/validators/dateInputValidation";
+
 
 interface Date {
     day: number;
@@ -12,6 +13,7 @@ interface Date {
     year: number;
     isHoliday: boolean;
     isCurrentMonth: boolean;
+    isSelected: boolean;
 }
 
 const props = defineProps({
@@ -19,10 +21,17 @@ const props = defineProps({
         type: Array,
         default: [],
     },
+    daysOffList: {
+        type: Array,
+        default: [],
+    }
 });
 
-const emit = defineEmits(["expectedDaysForMonth"]);
+const emit = defineEmits(["expectedDaysForMonth", "daysOff"]);
 const expectedDaysValue = ref(0);
+
+const dates = ref([]);
+
 
 const viewState = reactive({
     day: {
@@ -47,6 +56,14 @@ const viewState = reactive({
         },
     },
 });
+
+function checkDayOff(date: Date){
+    if(props.daysOffList){
+        props.daysOffList.find((element) => {
+            return date.isSelected = `${element.year}-${element.month}-${element.day}` == `${date.year}-${date.month}-${date.day}`;
+        }) 
+    }
+} 
 
 function checkHoliday(date: Date) {
     let dateStr: string;
@@ -83,6 +100,7 @@ const daysGenerator = computed(() => {
             date.year = viewState.month.value == 1 ? viewState.year.value - 1 : viewState.year.value;
             date.isCurrentMonth = false;
             checkHoliday(date);
+            checkDayOff(date);
             days.push(date);
 
         }
@@ -90,6 +108,7 @@ const daysGenerator = computed(() => {
     }
 
     //days of the current month
+    expectedDaysValue.value = 0;
     for (let i = 1; i <= numberDaysCurrentMonth; i++) {
         let date = {} as Date;
 
@@ -97,8 +116,8 @@ const daysGenerator = computed(() => {
         date.month = viewState.month.value;
         date.year = viewState.year.value;
         date.isCurrentMonth = true;
-
         checkHoliday(date);
+        checkDayOff(date);
         days.push(date);
 
         let dayOfWeek = daysOfWeek[new Date(`${viewState.year.value}-${viewState.month.value}-${i}`).getDay()];
@@ -109,7 +128,6 @@ const daysGenerator = computed(() => {
     }
     
     emit("expectedDaysForMonth", expectedDaysValue.value);
-    expectedDaysValue.value = 0;
 
     //days of next month
     let calendarLength = 42;
@@ -121,11 +139,11 @@ const daysGenerator = computed(() => {
         date.month = viewState.month.value + 1;
         date.year = viewState.month.value == 12 ? viewState.year.value + 1 : viewState.year.value;
         date.isCurrentMonth = false;
-
         checkHoliday(date);
+        checkDayOff(date);
         days.push(date);
     }
-
+    dates.value = [...days as never];
     return separatingDaysIntoWeeks(days);
 });
 
@@ -144,6 +162,26 @@ function separatingDaysIntoWeeks(days: Array<Date>) {
         weeks.push(week);
     }
     return weeks;
+}
+
+
+const daysOff = ref([]);
+
+function selectCalendarDay(date: Date){
+    date.isSelected = true;
+    daysOff.value.push(date as never)
+    emit("daysOff", daysOff.value);
+   
+}
+
+function getClass(date: Date){
+    if(date.isHoliday){
+        return 'holiday';
+    }
+    if(date.isSelected){
+        return 'isSelected';
+    }
+   
 }
 </script>
 
@@ -204,8 +242,8 @@ function separatingDaysIntoWeeks(days: Array<Date>) {
             </thead>
             <tbody>
                 <tr v-for="week in daysGenerator" :key="week[0]">
-                    <td :class="day.isCurrentMonth ? 'current-month' : 'no-current-month'" v-for="day in week" :key="day">
-                        <div :class="day.isHoliday ? 'holiday' : ''">{{ day.day }}</div>
+                    <td :class="day.isCurrentMonth ? 'current-month' : 'no-current-month'" v-for="day in week" :key="day" @click="selectCalendarDay(day)">
+                        <div :class="getClass(day)">{{ day.day }}</div>
                     </td>
                 </tr>
             </tbody>
@@ -260,6 +298,11 @@ th {
 .holiday {
     background-color: var(--pontotel-orange);
     border-radius: 8px;
+}
+.isSelected {
+    background-color: var(--pontotel-red);
+    border-radius: 8px;
+    color: var(--pontotel-gray);
 }
 
 /* input style */
