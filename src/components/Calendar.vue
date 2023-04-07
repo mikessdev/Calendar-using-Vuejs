@@ -16,13 +16,18 @@ interface Date {
     isSelected: boolean;
 }
 
+interface DaysOff {
+    date: String,
+    days: Number[]
+}
+
 const props = defineProps({
     holidayList: {
         type: Array,
         default: [],
     },
     daysOffList: {
-        type: Array,
+        type: Array<DaysOff>,
         default: [],
     }
 });
@@ -58,10 +63,29 @@ const viewState = reactive({
 });
 
 function checkDayOff(date: Date){
-    if(props.daysOffList){
-        props.daysOffList.find((element) => {
-            return date.isSelected = `${element.year}-${element.month}-${element.day}` == `${date.year}-${date.month}-${date.day}`;
+    let dayOff: DaysOff = {
+            date: `${date.year}-${date.month}`,
+            days: []
+        }
+
+    if(props.daysOffList){    
+        let daysOff: Array<DaysOff> = props.daysOffList;
+        let isSomeMonth = !!daysOff.find(element => {
+            return element.date == dayOff.date;
         }) 
+        
+        if(isSomeMonth){
+            let currentMonth = daysOff.filter((element) => {
+                return element.date === dayOff.date
+            })
+
+            for(let day of currentMonth[0].days){
+                if(date.day === day){
+                    date.isSelected = true;
+                    return date;
+                }
+            }
+        }
     }
 } 
 
@@ -69,14 +93,14 @@ function checkHoliday(date: Date) {
     let dateStr: string;
     let monthStr: string;
     let dayStr: string;
-
+    let holidays = props.holidayList;
     //making data compatible with the api
     dayStr = date.day < 10 ? "0" + date.day : "" + date.day;
     monthStr = date.month < 10 ? "0" + date.month : "" + date.month;
     dateStr = `${date.year}-${monthStr}-${dayStr}`;
 
-    if (props.holidayList) {
-        props.holidayList.find((element) => {
+    if (holidays) {
+       holidays.find((element) => {
             return (date.isHoliday = element.date == dateStr);
         });
         return date;
@@ -102,9 +126,7 @@ const daysGenerator = computed(() => {
             checkHoliday(date);
             checkDayOff(date);
             days.push(date);
-
-        }
-         
+        } 
     }
 
     //days of the current month
@@ -121,13 +143,23 @@ const daysGenerator = computed(() => {
         days.push(date);
 
         let dayOfWeek = daysOfWeek[new Date(`${viewState.year.value}-${viewState.month.value}-${i}`).getDay()];
-    
         if(dayOfWeek != 'sunday' && dayOfWeek != 'saturday'  ){
-            date.isHoliday ? expectedDaysValue.value-- : expectedDaysValue.value++;
+            if(!date.isHoliday){
+                expectedDaysValue.value++
+            }
+           
         }
     }
-    
-    emit("expectedDaysForMonth", expectedDaysValue.value);
+
+    //TODO refactor this after
+    let currentMonth = props.daysOffList.filter((element) => {
+            return element.date === `${viewState.year.value}-${viewState.month.value}`})
+    console.log(currentMonth)
+    if(currentMonth.length > 0){
+        emit("expectedDaysForMonth", expectedDaysValue.value - currentMonth[0].days.length);
+    }else{
+        emit("expectedDaysForMonth", expectedDaysValue.value);
+    }
 
     //days of next month
     let calendarLength = 42;
@@ -165,16 +197,52 @@ function separatingDaysIntoWeeks(days: Array<Date>) {
 }
 
 
-const daysOff = ref([]);
-
 function selectCalendarDay(date: Date){
-    date.isSelected = true;
-    daysOff.value.push(date as never)
-    emit("daysOff", daysOff.value);
-   
+    let daysOff: Array<DaysOff> = props.daysOffList;
+    let dayOff: DaysOff = {
+            date: `${date.year}-${date.month}`,
+            days: []
+        }
+      
+    let isSameMonth = !!daysOff.find(element => {
+        return element.date == dayOff.date;
+     }) 
+        
+    if(!isSameMonth){
+        dayOff.days.push(date.day);
+        daysOff.push(dayOff);
+    }else{
+        let currentMonth = daysOff.filter((element) => {
+            return element.date === dayOff.date
+        })
+
+        let dataIsSelected = !!currentMonth[0].days.find(element => {
+        return element == date.day;
+        }) 
+
+        if(dataIsSelected){
+            let currentdate = currentMonth[0].days.filter(element => {
+            return element !== date.day;
+        })
+        currentMonth[0].days = currentdate;
+        }else{
+            currentMonth[0].days.push(date.day)
+        }
+
+
+        //generating a new lsit of daysOff without the item that has changed and adding the new item in its place.
+        daysOff = daysOff.filter((element) => {
+            return element.date !== dayOff.date
+        })
+
+        daysOff.push(currentMonth[0])
+    }
+            
+        emit("daysOff", daysOff);  
+    
 }
 
-function getClass(date: Date){
+function setClass(date: Date){
     if(date.isHoliday){
         return 'holiday';
     }
@@ -243,7 +311,7 @@ function getClass(date: Date){
             <tbody>
                 <tr v-for="week in daysGenerator" :key="week[0]">
                     <td :class="day.isCurrentMonth ? 'current-month' : 'no-current-month'" v-for="day in week" :key="day" @click="selectCalendarDay(day)">
-                        <div :class="getClass(day)">{{ day.day }}</div>
+                        <div :class="setClass(day)">{{ day.day }}</div>
                     </td>
                 </tr>
             </tbody>

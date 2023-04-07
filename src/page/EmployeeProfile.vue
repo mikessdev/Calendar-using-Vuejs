@@ -104,16 +104,18 @@ const viewState = reactive({
         expectedHoursForDay: 8,
         expectedHoursForMonth: 0,
         daysOff: []
-    } 
+    },
 })
 
 function handleExpectedDays(value: number){
+    console.log("emitou: ", value)
     viewState.employee.expectedHoursForMonth = value * 8;
 }
 
 function handleDaysOff(value: Array<never>){
     viewState.employee.daysOff = value;
 }
+
 </script>
 
 <template>
