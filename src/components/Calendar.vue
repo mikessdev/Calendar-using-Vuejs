@@ -21,8 +21,7 @@ const props = defineProps({
     },
 });
 
-const emit = defineEmits(["expectedDays"]);
-
+const emit = defineEmits(["expectedDaysForMonth"]);
 const expectedDaysValue = ref(0);
 
 const viewState = reactive({
@@ -71,12 +70,13 @@ const daysGenerator = computed(() => {
     const numberDaysCurrentMonth = new Date(viewState.year.value, viewState.month.value, 0).getDate();
     const firstDayOfCurrentMonth = new Date(`${viewState.year.value}-${viewState.month.value}-1`).getDay() - 1;
     const lastDayMonthOfPrevius = new Date(viewState.year.value,viewState.month.value - 1,0).getDate();
+    const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
 
     let days = [];
 
     //days of last month
     for (let i = lastDayMonthOfPrevius-firstDayOfCurrentMonth; i <= lastDayMonthOfPrevius; i++) {
-        if(firstDayOfCurrentMonth > 0){
+        if(firstDayOfCurrentMonth >= 0){
             let date = {} as Date;
             date.day = i;
             date.month = viewState.month.value - 1;
@@ -89,10 +89,6 @@ const daysGenerator = computed(() => {
          
     }
 
-    //TODO
-    // expectedDaysValue.value = days.length 
-    // emit("expectedDays", expectedDaysValue.value);
-
     //days of the current month
     for (let i = 1; i <= numberDaysCurrentMonth; i++) {
         let date = {} as Date;
@@ -104,10 +100,20 @@ const daysGenerator = computed(() => {
 
         checkHoliday(date);
         days.push(date);
+
+        let dayOfWeek = daysOfWeek[new Date(`${viewState.year.value}-${viewState.month.value}-${i}`).getDay()];
+    
+        if(dayOfWeek != 'sunday' && dayOfWeek != 'saturday'  ){
+            date.isHoliday ? expectedDaysValue.value-- : expectedDaysValue.value++;
+        }
     }
+    
+    emit("expectedDaysForMonth", expectedDaysValue.value);
+    expectedDaysValue.value = 0;
 
     //days of next month
-    let remainingSpace = 42 - days.length;
+    let calendarLength = 42;
+    let remainingSpace = calendarLength - days.length;
     for (let i = 1; i <= remainingSpace ; i++) {
         let date = {} as Date;
 

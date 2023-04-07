@@ -10,6 +10,12 @@ const props = defineProps({
   },
   employeePicture: {
     type: String
+  },
+  expectedHoursForDay: {
+    type: Number
+  },
+  expectedHoursForMonth: {
+    type: Number
   }
 });
 
@@ -36,8 +42,8 @@ const props = defineProps({
       <p>Sex</p>
       <p>Sáb</p>
     </div>
-    <p>São esperados 8h de trabalho por dia!</p>
-    <p>São esperados 160h mensais de trabalho para o colaborador!</p>
+    <p>São esperados {{ expectedHoursForDay }}h de trabalho por dia!</p>
+    <p>São esperados {{ expectedHoursForMonth }}h mensais de trabalho para o colaborador!</p>
     
   </div>
 </template>

@@ -1,9 +1,8 @@
 <script setup lang="ts">
 import EmployeeCard from '@/components/EmployeeCard.vue';
 import Calendar from '@/components/Calendar.vue'
-import { ref } from 'vue';
+import { reactive, ref } from 'vue';
 
-const employeePicture = ref('https://img.freepik.com/fotos-gratis/lindo-retrato-de-cachorro_23-2149218450.jpg')
 const json = [
     {
         date: "2023-01-01",
@@ -66,12 +65,6 @@ const json = [
         level: "nacional"
     },
     {
-        date: "2023-10-28",
-        name: "Dia do Servidor Público",
-        type: "facultativo",
-        level: "nacional"
-    },
-    {
         date: "2023-11-02",
         name: "Finados",
         type: "feriado",
@@ -103,15 +96,30 @@ const json = [
     }
 ]
 
+const viewState = reactive({
+    employee: {
+        name: 'Colaborador Doguineo',
+        picture: 'https://img.freepik.com/fotos-gratis/lindo-retrato-de-cachorro_23-2149218450.jpg',
+        position: "Desenvolvedor",
+        expectedHoursForDay: 8,
+        expectedHoursForMonth: 0
+    } 
+})
+
+function handleExpectedDays(value: number){
+    viewState.employee.expectedHoursForMonth = value * 8;
+}
 </script>
 
 <template>
   <div id="container">
       <EmployeeCard 
-        employee-name="Colaborador Doguineo" 
-        :employee-picture="employeePicture" 
-        employee-position="Desenvolvedor" />
-      <Calendar :holiday-list="json"/>
+        :employee-name="viewState.employee.name" 
+        :employee-picture="viewState.employee.picture" 
+        :employee-position="viewState.employee.position" 
+        :expected-hours-for-month="viewState.employee.expectedHoursForMonth"
+        :expected-hours-for-day="viewState.employee.expectedHoursForDay"/>
+      <Calendar :holiday-list="json" @expected-days-for-month="handleExpectedDays"/>
   </div>
 </template>
 
