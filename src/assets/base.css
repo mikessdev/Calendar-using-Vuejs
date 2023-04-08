@@ -1,6 +1,7 @@
 /* color palette from <https://github.com/vuejs/theme> */
 :root {
   --pontotel-red: #ff6854;
+  --pontotel-green: #37c04e;
   --pontotel-light-red: #f7ceca;
   --pontotel-light-blue: #59c2cf;
   --pontotel-light-blue-40: rgba(103,181,211 .4);
@@ -8,6 +9,7 @@
   --pontotel-white-gray: #f8f8fa;
   --pontotel-white: #fff;
   --pontotel-gray: #777;
+  --pontotel-light-gray: #9b9b9b;
   --pontotel-black: #000;
   --pontotel-violet: #7c46b0;
   --pontotel-light-violet: #c6b1da;

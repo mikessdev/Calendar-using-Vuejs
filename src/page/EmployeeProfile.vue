@@ -103,12 +103,13 @@ const viewState = reactive({
         position: "Desenvolvedor",
         expectedHoursForDay: 8,
         expectedHoursForMonth: 0,
+        weeklyWorkSchedule: [1, 2, 3, 4, 5],
         daysOff: []
     },
 })
 
 function handleExpectedDays(value: number){
-    viewState.employee.expectedHoursForMonth = value * 8;
+    viewState.employee.expectedHoursForMonth = value * viewState.employee.expectedHoursForDay;
 }
 
 function handleDaysOff(value: Array<never>){
@@ -120,13 +121,13 @@ function handleDaysOff(value: Array<never>){
 <template>
     <div id="container-employeer-profile">
         <div id="wrapper-employeer-profile">
-            <EmployeeCard 
-              :employee-name="viewState.employee.name" 
-              :employee-picture="viewState.employee.picture" 
-              :employee-position="viewState.employee.position" 
-              :expected-hours-for-month="viewState.employee.expectedHoursForMonth"
-              :expected-hours-for-day="viewState.employee.expectedHoursForDay"/>
-            <Calendar :days-off-list="viewState.employee.daysOff" :holiday-list="json" @expected-days-for-month="handleExpectedDays" @days-off="handleDaysOff"/>
+            <EmployeeCard :employee-data="viewState.employee"/>
+            <Calendar 
+                :days-off-list="viewState.employee.daysOff" 
+                :holiday-list="json" 
+                :free-day-list="viewState.employee.weeklyWorkSchedule"
+                @expected-days-for-month="handleExpectedDays" 
+                @days-off="handleDaysOff"/>
         </div>
     </div>
 </template>

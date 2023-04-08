@@ -37,6 +37,11 @@ const props = defineProps({
     daysOffList: {
         type: Array<MonthsWithDaysOff>,
         default: [],
+    },
+    freeDayList:{
+        type: Array<Number>,
+        default: [1, 2, 3, 4, 5]
+        
     }
 });
 
@@ -83,8 +88,8 @@ const daysGenerator = computed(() => {
     //Generating first days out of the month
     for (let day = lastDayOfPreviousMonth-currentMonthStartNumber; day <= lastDayOfPreviousMonth; day++) {
         let date: Date = dateConstruction(
-            viewState.month.value - 1, 
             viewState.year.value == 1 ? viewState.year.value - 1 : viewState.year.value, 
+            viewState.month.value - 1, 
             day);
         days.push(date);
     }
@@ -100,12 +105,15 @@ const daysGenerator = computed(() => {
         days.push(date);
 
         let dayOfWeek = daysOfWeek[new Date(`${viewState.year.value}-${viewState.month.value}-${day}`).getDay()];
-        if(dayOfWeek != 'sunday' && dayOfWeek != 'saturday'  ){
+        if(!isFreeDay(date)){
             if(!date.isHoliday){
                 expectedDaysValue.value++
             }
-           
+
         }
+        // if(dayOfWeek != 'sunday' && dayOfWeek != 'saturday'  ){
+           
+        // }
     }
 
     expectedDays();
@@ -225,10 +233,9 @@ function selectCalendarDay(date: Date){
             date: `${date.year}-${date.month}`,
             days: [date.day]
         }
-      
-        
-    if(!date.isHoliday){
-
+  
+    if(!date.isHoliday && !isFreeDay(date)){
+        console.log("passei", !isFreeDay(date))
          let isCurrentMonth = !!monthsWithDaysOff.find(element => {
              return element.date == mounthOfdayOff.date;
           }) 
@@ -278,10 +285,20 @@ function removeDayOff(mounthOfdayOff: MonthsWithDaysOff, date: Date){
     return mounthOfdayOff.days.filter(element => { return element !== date.day;})
 }
 
+// check if the day is a free day
+function isFreeDay(date: Date){
+    let day = new Date(`${date.year}-${date.month}-${date.day}`).getDay()
+    return !props.freeDayList.includes(day);
+
+}
+
 // set class
 function setClass(date: Date){
     let dateStr = `${date.year}-${date.month}-${date.day}`; 
     let dateState = `${viewState.year.value}-${viewState.month.value}-${viewState.day.value}`; 
+
+    
+    
 
     if(dateStr === dateState){
         if(date.isDayOff){
@@ -289,21 +306,31 @@ function setClass(date: Date){
         }else if(date.isHoliday) {
             return 'today-holiday';
 
-        }else{
+        }else if(isFreeDay(date)){
+            return 'today-freeDay'
+        }
+        else{
             return 'today';
         }
     }
+
     if(date.isHoliday){
         return 'holiday';
     }
+
     if(date.isDayOff){
         return 'isDayOff';
+    }
+
+    if(isFreeDay(date)){
+       return 'freeDay';
     }
     if(date.isCurrentMonth){
         return 'current-month'
     }else{
         return 'no-current-month'
     }
+    
    
 }
 </script>
@@ -429,10 +456,21 @@ th {
     background-color: var(--pontotel-orange);
     color: var(--pontotel-black);
 }
+
+.freeDay {
+    background-color: var(--pontotel-light-gray);
+    color: var(--pontotel-white);
+}
 .today {
     border-bottom-style: groove;
     border-bottom-color: var(--pontotel-black);
     color: var(--pontotel-light-blue);
+}
+.today-freeDay {
+    border-bottom-style: groove;
+    border-bottom-color: var(--pontotel-black);
+    background-color: var(--pontotel-light-gray);
+    color: var(--pontotel-white);
 }
 .today-holiday {
     border-bottom-style: groove;
