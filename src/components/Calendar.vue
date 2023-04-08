@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import {
     yearInputValidation,
     monthInputValidation,
     dayInputValidation,
 } from "@/validators/dateInputValidation";
+import { mount } from "@vue/test-utils";
 
 //Interfaces
 interface Date {
@@ -45,8 +46,10 @@ const props = defineProps({
     }
 });
 
+console.log(props.holidayList)
+
 //Emit
-const emit = defineEmits(["expectedDaysForMonth", "daysOff"]);
+const emit = defineEmits(["expectedDaysForMonth", "daysOff", 'year']);
 
 //ref 
 const expectedDaysValue = ref(0);
@@ -76,13 +79,18 @@ const viewState = reactive({
     },
 });
 
+onMounted(()=> { emit('year', viewState.year.value) });
+
+watch(()=> viewState.year.value, (newValue, oldValue) => { 
+    emit('year', newValue) 
+})
+
 
 //Generating the days for the calendar
 const daysGenerator = computed(() => {
     const daysInCurrentMonth = new Date(viewState.year.value, viewState.month.value, 0).getDate();
     const currentMonthStartNumber = new Date(`${viewState.year.value}-${viewState.month.value}-1`).getDay() - 1;
     const lastDayOfPreviousMonth = new Date(viewState.year.value,viewState.month.value - 1,0).getDate();
-    const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
     let days = [];
 
     //Generating first days out of the month
@@ -104,7 +112,6 @@ const daysGenerator = computed(() => {
             isCurrentMonth);
         days.push(date);
 
-        let dayOfWeek = daysOfWeek[new Date(`${viewState.year.value}-${viewState.month.value}-${day}`).getDay()];
         if(!isFreeDay(date)){
             if(!date.isHoliday){
                 expectedDaysValue.value++
@@ -342,9 +349,6 @@ function setClass(date: Date){
     }
 
     return 'no-current-month'
-    
-
-   
 }
 </script>
 
@@ -420,17 +424,16 @@ function setClass(date: Date){
     line-height: 1.125em;
     box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
     width: 100%;
-    height: 500px;
+    height: 420px;
     flex-wrap: wrap;
     background-color: var( --pontotel-white);
     border-radius: 8px;
     line-height: 1.125em;
-    padding-bottom: 32px;
+    padding: 32px 10px;
     justify-content: center;
 }
 
 h1 {
-    margin-top: 32px;
     margin-bottom: 32px;
     font-size: 32px;
 }
@@ -449,6 +452,8 @@ table {
 td,
 th {
     padding: 8px;
+    cursor: pointer;
+    user-select: none;
 }
 
 .current-month {
@@ -459,7 +464,6 @@ th {
     background-color: var(--pontotel-light-red);
     color: var(--pontotel-black);
 }
-
 
 .no-current-month {
     color: var(--pontotel-gray);
@@ -502,7 +506,7 @@ th {
     color: var(--pontotel-white);
 }
 .today:hover {
-    background-color: var(--pontotel-light-violet);
+    background-color: var(--pontotel-light-red);
     color: var(--pontotel-black);
 }
 .isDayOff {

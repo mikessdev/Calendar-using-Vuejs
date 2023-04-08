@@ -1,100 +1,113 @@
 <script setup lang="ts">
 import EmployeeCard from '@/components/EmployeeCard.vue';
 import Calendar from '@/components/Calendar.vue'
-import { reactive, ref } from 'vue';
+import { computed, reactive, ref, type Ref } from 'vue';
 
-const json = [
-    {
-        date: "2023-01-01",
-        name: "Confraternização Universal",
-        type: "feriado",
-        level: "nacional"
-    },
-    {
-        date: "2023-02-20",
-        name: "Carnaval",
-        type: "facultativo",
-        level: "nacional"
-    },
-    {
-        date: "2023-02-21",
-        name: "Carnaval",
-        type: "facultativo",
-        level: "nacional"
-    },
-    {
-        date: "2023-02-22",
-        name: "Quarta-feira de Cinzas",
-        type: "facultativo",
-        level: "nacional"
-    },
-    {
-        date: "2023-04-07",
-        name: "Sexta-feira Santa",
-        type: "facultativo",
-        level: "nacional"
-    },
-    {
-        date: "2023-04-21",
-        name: "Tiradentes",
-        type: "feriado",
-        level: "nacional"
-    },
-    {
-        date: "2023-05-01",
-        name: "Dia do Trabalhador",
-        type: "feriado",
-        level: "nacional"
-    },
-    {
-        date: "2023-06-08",
-        name: "Corpus Christi",
-        type: "facultativo",
-        level: "nacional"
-    },
-    {
-        date: "2023-09-07",
-        name: "Independência do Brasil",
-        type: "feriado",
-        level: "nacional"
-    },
-    {
-        date: "2023-10-12",
-        name: "Nossa Senhora Aparecida",
-        type: "feriado",
-        level: "nacional"
-    },
-    {
-        date: "2023-11-02",
-        name: "Finados",
-        type: "feriado",
-        level: "nacional"
-    },
-    {
-        date: "2023-11-15",
-        name: "Proclamação da República",
-        type: "feriado",
-        level: "nacional"
-    },
-    {
-        date: "2023-12-24",
-        name: "Véspera de Natal",
-        type: "facultativo",
-        level: "nacional"
-    },
-    {
-        date: "2023-12-25",
-        name: "Natal",
-        type: "feriado",
-        level: "nacional"
-    },
-    {
-        date: "2023-12-31",
-        name: "Véspera de Ano-Novo",
-        type: "facultativo",
-        level: "nacional"
-    }
-]
+const holidays:Ref<any[]> = ref([]); 
+
+const getBrazilHolidays = async (year: number) => {
+    console.log(year)
+    const response = await fetch(`https://brasilapi.com.br/api/feriados/v1/${year}`)
+    holidays.value =  await response.json()
+}
+
+const getHolidays = computed(()=>{
+    return holidays.value
+})
+
+
+// const json = [
+//     {
+//         date: "2023-01-01",
+//         name: "Confraternização Universal",
+//         type: "feriado",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-02-20",
+//         name: "Carnaval",
+//         type: "facultativo",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-02-21",
+//         name: "Carnaval",
+//         type: "facultativo",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-02-22",
+//         name: "Quarta-feira de Cinzas",
+//         type: "facultativo",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-04-07",
+//         name: "Sexta-feira Santa",
+//         type: "facultativo",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-04-21",
+//         name: "Tiradentes",
+//         type: "feriado",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-05-01",
+//         name: "Dia do Trabalhador",
+//         type: "feriado",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-06-08",
+//         name: "Corpus Christi",
+//         type: "facultativo",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-09-07",
+//         name: "Independência do Brasil",
+//         type: "feriado",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-10-12",
+//         name: "Nossa Senhora Aparecida",
+//         type: "feriado",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-11-02",
+//         name: "Finados",
+//         type: "feriado",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-11-15",
+//         name: "Proclamação da República",
+//         type: "feriado",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-12-24",
+//         name: "Véspera de Natal",
+//         type: "facultativo",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-12-25",
+//         name: "Natal",
+//         type: "feriado",
+//         level: "nacional"
+//     },
+//     {
+//         date: "2023-12-31",
+//         name: "Véspera de Ano-Novo",
+//         type: "facultativo",
+//         level: "nacional"
+//     }
+// ]
 
 const viewState = reactive({
     employee: {
@@ -124,10 +137,11 @@ function handleDaysOff(value: Array<never>){
             <EmployeeCard :employee-data="viewState.employee"/>
             <Calendar 
                 :days-off-list="viewState.employee.daysOff" 
-                :holiday-list="json" 
+                :holiday-list="getHolidays" 
                 :free-day-list="viewState.employee.weeklyWorkSchedule"
                 @expected-days-for-month="handleExpectedDays" 
-                @days-off="handleDaysOff"/>
+                @days-off="handleDaysOff"
+                @year="getBrazilHolidays"/>
         </div>
     </div>
 </template>

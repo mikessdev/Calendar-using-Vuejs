@@ -1,42 +1,46 @@
-// import { shallowMountsim  } from '@vue/test-utils';
-// import Calendar from '@/components/Calendar.vue';
+import { shallowMount } from "@vue/test-utils";
+import Calendar from "@/components/Calendar.vue";
 
-// describe('Calendar.vue', () => {
-//   let wrapper;
+describe("Calendar", () => {
+  it("should render correct number of days for the current month", () => {
+    const wrapper = shallowMount(Calendar);
 
-//   beforeEach(() => {
-//     wrapper = shallowMount(Calendar, {
-//       props: {
-//         holidayList: [
-//           // mock holiday list data
-//         ],
-//         daysOffList: [
-//           // mock days off list data
-//         ],
-//         freeDayList: [
-//           // mock free day list data
-//         ],
-//       },
-//     });
-//   });
+    // Assume the current month has 30 days
+    expect(wrapper.findAll(".calendar-day")).toHaveLength(30);
+  });
 
-//   afterEach(() => {
-//     wrapper.unmount();
-//   });
+  it("should render correct number of days for the previous month", () => {
+    const wrapper = shallowMount(Calendar);
 
-//   it('renders the component correctly', () => {
-//     expect(wrapper.exists()).toBe(true);
-//   });
+    // Assume the previous month has 5 days
+    expect(wrapper.findAll(".calendar-day-previous")).toHaveLength(5);
+  });
 
-//   it('calculates expectedDaysValue correctly', () => {
-//     // Set the values for year, month, and day
-//     wrapper.vm.viewState.year.value = 2023;
-//     wrapper.vm.viewState.month.value = 4;
-//     wrapper.vm.viewState.day.value = 8;
+  it("should render correct number of days for the next month", () => {
+    const wrapper = shallowMount(Calendar);
 
-//     // Call the computed property to trigger the calculation
-//     const daysGenerator = wrapper.vm.daysGenerator;
+    // Assume the next month has 7 days
+    expect(wrapper.findAll(".calendar-day-next")).toHaveLength(7);
+  });
 
-//     // Assert the expectedDaysValue is calculated correctly
-//     expect(wrapper.vm.expectedDaysValue.value).toBe(/* expected value */);
-//   });
+  it("should update expectedDaysValue correctly when daysOffList prop is updated", async () => {
+    const wrapper = shallowMount(Calendar);
+
+    // Set daysOffList prop to an array with 2 days off
+    await wrapper.setProps({ daysOffList: [{ date: "2023-04", days: [1, 15] }] });
+
+    // Expect expectedDaysValue to be 28 (30 days in current month minus 2 days off)
+    expect(wrapper.vm.$data.expectedDaysValue).toBe(28);
+  });
+
+  it("should call expectedDays() method when daysOffList prop is updated", async () => {
+    const wrapper = shallowMount(Calendar);
+    const expectedDaysSpy = jest.spyOn(wrapper.vm, "expectedDays");
+
+    // Set daysOffList prop to an array with 1 day off
+    await wrapper.setProps({ daysOffList: [{ date: "2023-04", days: [1] }] });
+
+    // Expect expectedDays() method to be called once
+    expect(expectedDaysSpy).toHaveBeenCalledTimes(1);
+  });
+});
