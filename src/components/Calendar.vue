@@ -88,8 +88,8 @@ const daysGenerator = computed(() => {
     //Generating first days out of the month
     for (let day = lastDayOfPreviousMonth-currentMonthStartNumber; day <= lastDayOfPreviousMonth; day++) {
         let date: Date = dateConstruction(
-            viewState.year.value == 1 ? viewState.year.value - 1 : viewState.year.value, 
-            viewState.month.value - 1, 
+            viewState.month.value == 1 ? viewState.year.value - 1 : viewState.year.value, 
+            viewState.month.value == 1 ? 12 :  viewState.month.value - 1,
             day);
         days.push(date);
     }
@@ -97,7 +97,7 @@ const daysGenerator = computed(() => {
     //Generating days of the current month
     expectedDaysValue.value = 0;
     for (let day = 1; day <= daysInCurrentMonth; day++) {
-        let isCurrentMonth = true;
+        const isCurrentMonth = true;
         let date: Date = dateConstruction(
             viewState.year.value, 
             viewState.month.value, day, 
@@ -292,7 +292,7 @@ function setClass(date: Date){
     let dateStr = `${date.year}-${date.month}-${date.day}`; 
     let dateState = `${viewState.year.value}-${viewState.month.value}-${viewState.day.value}`; 
 
-    
+
     if(dateStr === dateState){
         if(date.isDayOff){
             return 'today-isDayOff';
