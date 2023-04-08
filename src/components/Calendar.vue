@@ -521,7 +521,6 @@ th {
     color: var(--pontotel-white);
 }
 
-/* input style */
 .input-wrapper {
     margin-bottom: 20px;
 }

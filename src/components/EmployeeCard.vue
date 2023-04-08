@@ -31,10 +31,14 @@ function setClass(employee: number[], day: number){
 <template>
   <div id="employee-card">
     <EmployeePicture :employee-picture="employee.picture"/>
-    <h2 id="employee-card-name" class="employee-card-text">
+    <h2 
+      id="employee-card-name" 
+      class="employee-card-text">
       {{ employee.name }}
     </h2>
-    <p id="employee-card-hole" class="employee-card-text">
+    <p 
+      id="employee-card-hole" 
+      class="employee-card-text">
       {{ employee.position }}
     </p>
     <p id="employee-week" class="employee-card-text">
@@ -49,8 +53,12 @@ function setClass(employee: number[], day: number){
       <p :class="setClass(employee.weeklyWorkSchedule, 5)">Sex</p>
       <p :class="setClass(employee.weeklyWorkSchedule, 6)">Sáb</p>
     </div>
-    <p class="employee-card-text">São esperados {{ employee.expectedHoursForDay }}h de trabalho por dia!</p>
-    <p class="employee-card-text">São esperados {{ employee.expectedHoursForMonth }}h mensais de trabalho para o colaborador!</p>
+    <p class="employee-card-text">
+      São esperados {{ employee.expectedHoursForDay }}h de trabalho por dia!
+    </p>
+    <p class="employee-card-text">
+      São esperados {{ employee.expectedHoursForMonth }}h mensais de trabalho para o colaborador!
+    </p>
     
   </div>
 </template>
@@ -73,7 +81,6 @@ function setClass(employee: number[], day: number){
   }
 
   #days-of-week{
-    display: flex;
     display: flex;
     flex-wrap: wrap;
   }
