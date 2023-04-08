@@ -189,6 +189,18 @@ function isHoliday(date: Date) {
         });
 }
 
+//check if date is valide
+function dateIsValid(year: number, month: number, day: number){
+    if(!!!yearInputValidation(year)){
+        if(!!!monthInputValidation(month)){
+            if( !!!dayInputValidation(day)){
+                return true
+            }
+        }
+    }
+   
+}
+
 //responsible for keeping the count of days off in the correct months
 function expectedDays(){
     const year = viewState.year.value;
@@ -292,7 +304,9 @@ function setClass(date: Date){
     let dateStr = `${date.year}-${date.month}-${date.day}`; 
     let dateState = `${viewState.year.value}-${viewState.month.value}-${viewState.day.value}`; 
 
-
+if(!dateIsValid(viewState.year.value, viewState.month.value, viewState.day.value)){
+    return 'date-invalid'
+}else{
     if(dateStr === dateState){
         if(date.isDayOff){
             return 'today-isDayOff';
@@ -323,7 +337,7 @@ function setClass(date: Date){
     }else{
         return 'no-current-month'
     }
-    
+}
    
 }
 </script>
@@ -348,7 +362,7 @@ function setClass(date: Date){
                         <label :class="
                             viewState.month.error ? 'input-label-erro' : 'input-label'
                         " for="month">Mês:</label>
-                        <input type="number" :class="
+                        <input type="number" min="1" max="12" :class="
                             viewState.month.error ? 'custom-input-error' : 'custom-input'
                         " id="month" v-model="viewState.month.value" @input="viewState.month.validation" />
                     </div>
@@ -359,7 +373,7 @@ function setClass(date: Date){
                 <div class="input-wrapper">
                     <div>
                         <label :class="viewState.day.error ? 'input-label-erro' : 'input-label'" for="day">Dia:</label>
-                        <input type="number" :class="
+                        <input type="number" min="1" max="31" :class="
                             viewState.day.error ? 'custom-input-error' : 'custom-input'
                         " id="day" v-model="viewState.day.value" @input="viewState.day.validation" />
                     </div>
@@ -458,6 +472,10 @@ th {
     border-bottom-style: groove;
     border-bottom-color: var(--pontotel-black);
     color: var(--pontotel-light-blue);
+}
+.date-invalid {
+    background-color: var(--pontotel-white);
+    color: var(--pontotel-light-gray);
 }
 .today-freeDay {
     border-bottom-style: groove;
