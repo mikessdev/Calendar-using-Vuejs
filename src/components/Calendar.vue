@@ -46,8 +46,6 @@ const props = defineProps({
     }
 });
 
-console.log(props.holidayList)
-
 //Emit
 const emit = defineEmits(["expectedDaysForMonth", "daysOff", 'year']);
 
@@ -142,7 +140,6 @@ const daysGenerator = computed(() => {
  * Function 
  */
 
-//Responsible for building the Date object
 function dateConstruction(year: number, month: number, day: number, isCurrentMonth = false):Date{
     let date = {} as Date;    
     date.year = year;
@@ -154,7 +151,6 @@ function dateConstruction(year: number, month: number, day: number, isCurrentMon
     return date;
 }
 
-//Check if the day is a day off
 function isDayOff(date: Date): boolean{
     let dayOff: MonthsWithDaysOff = {
             date: `${date.year}-${date.month}`,
@@ -184,7 +180,6 @@ function isDayOff(date: Date): boolean{
     return false
 }
 
-//Check if the day is a holiday
 function isHoliday(date: Date) {
     let month: string = date.month < 10 ? "0" + date.month : "" + date.month;
     let day: string = date.day < 10 ? "0" + date.day : "" + date.day;
@@ -196,7 +191,6 @@ function isHoliday(date: Date) {
         });
 }
 
-//check if date is valide
 function dateIsValid(year: number, month: number, day: number){
     if(!!!yearInputValidation(year)){
         if(!!!monthInputValidation(month)){
@@ -223,7 +217,6 @@ function expectedDays(){
     }
 }
 
-//separating the days into weeks
 function separatingDaysIntoWeeks(days: Date[]) {
     const weeks = [];
     let week: any = [];
@@ -274,7 +267,6 @@ function selectCalendarDay(date: Date){
      }
 }
 
-//check if the date is selected
 function dateIsSelected(currentMonth: MonthsWithDaysOff, date: Date){
     return !!currentMonth.days.find(element => {
             return element == date.day;
@@ -282,31 +274,26 @@ function dateIsSelected(currentMonth: MonthsWithDaysOff, date: Date){
 }
 
 
-//find the month corresponding to the date
 function findMonthBelongsToDate(monthsWithDaysOff: MonthsWithDaysOff[], mounthOfdayOff: MonthsWithDaysOff){
     return monthsWithDaysOff.filter((element) => {
             return element.date === mounthOfdayOff.date
         })
 }
 
-//add new day off
 function addNewDayOff(currentMonth: MonthsWithDaysOff, date: Date){
     currentMonth.days.push(date.day)
     return currentMonth;
 }
 
-// remove day off
 function removeDayOff(mounthOfdayOff: MonthsWithDaysOff, date: Date){
     return mounthOfdayOff.days.filter(element => { return element !== date.day;})
 }
 
-// check if the day is a free day
 function isFreeDay(date: Date){
     let day = new Date(`${date.year}-${date.month}-${date.day}`).getUTCDay()
     return !props.freeDayList.includes(day);
 }
 
-// set class
 function setClass(date: Date){
     let dateStr = `${date.year}-${date.month}-${date.day}`; 
     let dateState = `${viewState.year.value}-${viewState.month.value}-${viewState.day.value}`; 
@@ -358,41 +345,62 @@ function setClass(date: Date){
             <div id="input-container-calendar">
                 <div class="input-wrapper">
                     <div>
-                        <label :class="viewState.year.error ? 'input-label-erro' : 'input-label'" for="year">Ano:</label>
-                        <input type="number" :class="
-                            viewState.year.error ? 'custom-input-error' : 'custom-input'
-                        " v-model="viewState.year.value" @input="viewState.year.validation" />
+                        <label 
+                            :class="viewState.year.error ? 'input-label-erro' : 'input-label'" 
+                            for="year">Ano:</label>
+                        <input 
+                            type="number" 
+                            :class="
+                            viewState.year.error ? 'custom-input-error' : 'custom-input'" 
+                            v-model="viewState.year.value" 
+                            @input="viewState.year.validation" />
                     </div>
-                    <label v-if="viewState.year.error" class="error-message">{{
-                        viewState.year.error
-                    }}</label>
+                    <label 
+                        v-if="viewState.year.error" 
+                        class="error-message">
+                        {{ viewState.year.error }}
+                    </label>
                 </div>
                 <div class="input-wrapper">
                     <div>
-                        <label :class="
-                            viewState.month.error ? 'input-label-erro' : 'input-label'
-                        " for="month">Mês:</label>
-                        <input type="number" min="1" max="12" :class="
-                            viewState.month.error ? 'custom-input-error' : 'custom-input'
-                        " id="month" v-model="viewState.month.value" @input="viewState.month.validation" />
+                        <label 
+                            :class="
+                            viewState.month.error ? 'input-label-erro' : 'input-label'" 
+                            for="month">Mês:</label>
+                        <input 
+                            type="number" 
+                            min="1" max="12" 
+                            :class="viewState.month.error ? 'custom-input-error' : 'custom-input'" 
+                            id="month" 
+                            v-model="viewState.month.value" 
+                            @input="viewState.month.validation" />
                     </div>
-                    <label v-if="viewState.month.error" class="error-message">{{
-                        viewState.month.error
-                    }}</label>
+                    <label 
+                        v-if="viewState.month.error" 
+                        class="error-message">
+                        {{ viewState.month.error }}
+                    </label>
                 </div>
                 <div class="input-wrapper">
                     <div>
-                        <label :class="viewState.day.error ? 'input-label-erro' : 'input-label'" for="day">Dia:</label>
-                        <input type="number" min="1" max="31" :class="
-                            viewState.day.error ? 'custom-input-error' : 'custom-input'
-                        " id="day" v-model="viewState.day.value" @input="viewState.day.validation" />
+                        <label 
+                            :class="viewState.day.error ? 'input-label-erro' : 'input-label'" 
+                            for="day">Dia:</label>
+                        <input 
+                            type="number" 
+                            min="1" 
+                            max="31" 
+                            :class="viewState.day.error ? 'custom-input-error' : 'custom-input'" 
+                            id="day" 
+                            v-model="viewState.day.value" 
+                            @input="viewState.day.validation" />
                     </div>
-                    <label v-if="viewState.day.error" class="error-message">{{
-                        viewState.day.error
-                    }}</label>
+                    <label 
+                        v-if="viewState.day.error" 
+                        class="error-message">
+                        {{ viewState.day.error }}</label>
                 </div>
         </div>
-
         <table>
             <thead>
                 <tr>
@@ -428,7 +436,6 @@ function setClass(date: Date){
     flex-wrap: wrap;
     background-color: var( --pontotel-white);
     border-radius: 8px;
-    line-height: 1.125em;
     padding: 32px 10px;
     justify-content: center;
 }

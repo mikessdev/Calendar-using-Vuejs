@@ -6,7 +6,6 @@ import { computed, reactive, ref, type Ref } from 'vue';
 const holidays:Ref<any[]> = ref([]); 
 
 const getBrazilHolidays = async (year: number) => {
-    console.log(year)
     const response = await fetch(`https://brasilapi.com.br/api/feriados/v1/${year}`)
     holidays.value =  await response.json()
 }
