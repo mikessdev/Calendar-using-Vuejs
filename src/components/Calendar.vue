@@ -304,21 +304,25 @@ function setClass(date: Date){
     let dateStr = `${date.year}-${date.month}-${date.day}`; 
     let dateState = `${viewState.year.value}-${viewState.month.value}-${viewState.day.value}`; 
 
-if(!dateIsValid(viewState.year.value, viewState.month.value, viewState.day.value)){
-    return 'date-invalid'
-}else{
+    if(!dateIsValid(viewState.year.value, viewState.month.value, viewState.day.value)){
+        return 'date-invalid'
+    }
+
     if(dateStr === dateState){
         if(date.isDayOff){
             return 'today-isDayOff';
-        }else if(date.isHoliday) {
+        }
+
+        if(date.isHoliday) {
             return 'today-holiday';
 
-        }else if(isFreeDay(date)){
+        }
+        
+        if(isFreeDay(date)){
             return 'today-freeDay'
         }
-        else{
-            return 'today';
-        }
+        
+         return 'today'; 
     }
 
     if(date.isHoliday){
@@ -332,12 +336,14 @@ if(!dateIsValid(viewState.year.value, viewState.month.value, viewState.day.value
     if(isFreeDay(date)){
        return 'freeDay';
     }
+
     if(date.isCurrentMonth){
         return 'current-month'
-    }else{
-        return 'no-current-month'
     }
-}
+
+    return 'no-current-month'
+    
+
    
 }
 </script>
