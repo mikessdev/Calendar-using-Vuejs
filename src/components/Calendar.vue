@@ -111,9 +111,6 @@ const daysGenerator = computed(() => {
             }
 
         }
-        // if(dayOfWeek != 'sunday' && dayOfWeek != 'saturday'  ){
-           
-        // }
     }
 
     expectedDays();
@@ -126,7 +123,7 @@ const daysGenerator = computed(() => {
     for (let day = 1; day <= calendarRemainingLength ; day++) {
         let date: Date = dateConstruction(
             viewState.month.value == 12 ? viewState.year.value + 1 : viewState.year.value, 
-            viewState.month.value + 1, 
+            viewState.month.value == 12 ? viewState.month.value - 11 :  viewState.month.value + 1,
             day)
         days.push(date);
     }
@@ -233,9 +230,8 @@ function selectCalendarDay(date: Date){
             date: `${date.year}-${date.month}`,
             days: [date.day]
         }
-  
+    
     if(!date.isHoliday && !isFreeDay(date)){
-        console.log("passei", !isFreeDay(date))
          let isCurrentMonth = !!monthsWithDaysOff.find(element => {
              return element.date == mounthOfdayOff.date;
           }) 
@@ -287,9 +283,8 @@ function removeDayOff(mounthOfdayOff: MonthsWithDaysOff, date: Date){
 
 // check if the day is a free day
 function isFreeDay(date: Date){
-    let day = new Date(`${date.year}-${date.month}-${date.day}`).getDay()
+    let day = new Date(`${date.year}-${date.month}-${date.day}`).getUTCDay()
     return !props.freeDayList.includes(day);
-
 }
 
 // set class
@@ -298,8 +293,6 @@ function setClass(date: Date){
     let dateState = `${viewState.year.value}-${viewState.month.value}-${viewState.day.value}`; 
 
     
-    
-
     if(dateStr === dateState){
         if(date.isDayOff){
             return 'today-isDayOff';
