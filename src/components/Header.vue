@@ -11,6 +11,6 @@
         background-color: var(--pontotel-light-blue);
         width: 100%;
         height: 60px;
-        margin-bottom: 50px;
+        margin-bottom: 100px;
     }
 </style>

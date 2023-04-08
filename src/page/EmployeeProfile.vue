@@ -134,20 +134,19 @@ function handleDaysOff(value: Array<never>){
 
 <style scoped>
 #container-employeer-profile {
-    max-width: 100%;
+    height: 100%;
     display: flex;
-    align-content: center;
-    flex-direction: column;
+    width: 100%;    
 }
 #wrapper-employeer-profile {
+    width: 1800px;
+    margin: 0 auto;
     display: flex;
     flex-wrap: wrap;
-    border-radius: 8px;
-    line-height: 1.125em;
     text-align: center;
-    padding-bottom: 32px;
-    justify-content: space-evenly;
     align-content: center;
+    justify-content: space-evenly;
+    align-items: center;
 }
 
 </style>
