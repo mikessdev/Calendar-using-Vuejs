@@ -6,38 +6,47 @@ import {
     dayInputValidation,
 } from "@/validators/dateInputValidation";
 
-
+//Interfaces
 interface Date {
     day: number;
     month: number;
     year: number;
     isHoliday: boolean;
     isCurrentMonth: boolean;
-    isSelected: boolean;
+    isDayOff: boolean;
+    isFreeDay: boolean;
 }
 
-interface DaysOff {
+interface Holiday {
+    date: string;
+    level: string;
+    name: string;
+    type: string;
+}
+
+interface MonthsWithDaysOff {
     date: String,
     days: Number[]
 }
 
 const props = defineProps({
     holidayList: {
-        type: Array,
+        type: Array<Holiday>,
         default: [],
     },
     daysOffList: {
-        type: Array<DaysOff>,
+        type: Array<MonthsWithDaysOff>,
         default: [],
     }
 });
 
+//Emit
 const emit = defineEmits(["expectedDaysForMonth", "daysOff"]);
+
+//ref 
 const expectedDaysValue = ref(0);
 
-const dates = ref([]);
-
-
+//viewState
 const viewState = reactive({
     day: {
         value: new Date().getDate(),
@@ -62,87 +71,41 @@ const viewState = reactive({
     },
 });
 
-function checkDayOff(date: Date){
-    let dayOff: DaysOff = {
-            date: `${date.year}-${date.month}`,
-            days: []
-        }
 
-    if(props.daysOffList){    
-        let daysOff: Array<DaysOff> = props.daysOffList;
-        let isSomeMonth = !!daysOff.find(element => {
-            return element.date == dayOff.date;
-        }) 
-        
-        if(isSomeMonth){
-            let currentMonth = daysOff.filter((element) => {
-                return element.date === dayOff.date
-            })
-
-            for(let day of currentMonth[0].days){
-                if(date.day === day){
-                    date.isSelected = true;
-                    return date;
-                }
-            }
-        }
-    }
-} 
-
-function checkHoliday(date: Date) {
-    let dateStr: string;
-    let monthStr: string;
-    let dayStr: string;
-    let holidays = props.holidayList;
-    //making data compatible with the api
-    dayStr = date.day < 10 ? "0" + date.day : "" + date.day;
-    monthStr = date.month < 10 ? "0" + date.month : "" + date.month;
-    dateStr = `${date.year}-${monthStr}-${dayStr}`;
-
-    if (holidays) {
-       holidays.find((element) => {
-            return (date.isHoliday = element.date == dateStr);
-        });
-        return date;
-    }
-}
-
+//Generating the days for the calendar
 const daysGenerator = computed(() => {
-    const numberDaysCurrentMonth = new Date(viewState.year.value, viewState.month.value, 0).getDate();
-    const firstDayOfCurrentMonth = new Date(`${viewState.year.value}-${viewState.month.value}-1`).getDay() - 1;
-    const lastDayMonthOfPrevius = new Date(viewState.year.value,viewState.month.value - 1,0).getDate();
+    const daysInCurrentMonth = new Date(viewState.year.value, viewState.month.value, 0).getDate();
+    const currentMonthStartNumber = new Date(`${viewState.year.value}-${viewState.month.value}-1`).getDay() - 1;
+    const lastDayOfPreviousMonth = new Date(viewState.year.value,viewState.month.value - 1,0).getDate();
     const daysOfWeek = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
-
     let days = [];
 
-    //days of last month
-    for (let i = lastDayMonthOfPrevius-firstDayOfCurrentMonth; i <= lastDayMonthOfPrevius; i++) {
-        if(firstDayOfCurrentMonth >= 0){
-            let date = {} as Date;
-            date.day = i;
-            date.month = viewState.month.value - 1;
-            date.year = viewState.month.value == 1 ? viewState.year.value - 1 : viewState.year.value;
-            date.isCurrentMonth = false;
-            checkHoliday(date);
-            checkDayOff(date);
-            days.push(date);
-        } 
+    //Generating first days out of the month
+    for (let day = lastDayOfPreviousMonth-currentMonthStartNumber; day <= lastDayOfPreviousMonth; day++) {
+        let date: Date = dateConstruction(
+            viewState.month.value - 1, 
+            viewState.year.value == 1 ? viewState.year.value - 1 : viewState.year.value, 
+            day);
+
+        date.isHoliday = isHoliday(date);  
+        date.isDayOff = isDayOff(date);
+        days.push(date);
     }
 
-    //days of the current month
+    //Generating days of the current month
     expectedDaysValue.value = 0;
-    for (let i = 1; i <= numberDaysCurrentMonth; i++) {
-        let date = {} as Date;
+    for (let day = 1; day <= daysInCurrentMonth; day++) {
+        let isCurrentMonth = true;
+        let date: Date = dateConstruction(
+            viewState.year.value, 
+            viewState.month.value, day, 
+            isCurrentMonth);
 
-        date.day = i;
-        date.month = viewState.month.value;
-        date.year = viewState.year.value;
-        date.isCurrentMonth = true;
-        checkHoliday(date);
-        checkDayOff(date);
+        date.isHoliday = isHoliday(date);
+        date.isDayOff = isDayOff(date);
         days.push(date);
 
-        let dayOfWeek = daysOfWeek[new Date(`${viewState.year.value}-${viewState.month.value}-${i}`).getDay()];
+        let dayOfWeek = daysOfWeek[new Date(`${viewState.year.value}-${viewState.month.value}-${day}`).getDay()];
         if(dayOfWeek != 'sunday' && dayOfWeek != 'saturday'  ){
             if(!date.isHoliday){
                 expectedDaysValue.value++
@@ -151,45 +114,112 @@ const daysGenerator = computed(() => {
         }
     }
 
-    //TODO refactor this after
-    let currentMonth = props.daysOffList.filter((element) => {
-            return element.date === `${viewState.year.value}-${viewState.month.value}`})
-    console.log(currentMonth)
+    expectedDays();
+
+    //Generating last days out of the month
+    let calendarLength = 42;
+    let daysAlreadyFilled = days.length;
+
+    let calendarRemainingLength = calendarLength - daysAlreadyFilled;
+    for (let day = 1; day <= calendarRemainingLength ; day++) {
+        let date: Date = dateConstruction(
+            viewState.month.value == 12 ? viewState.year.value + 1 : viewState.year.value, 
+            viewState.month.value + 1, 
+            day)
+            
+        date.isHoliday = isHoliday(date);  
+        date.isDayOff = isDayOff(date);
+        days.push(date);
+    }
+    return separatingDaysIntoWeeks(days);
+});
+
+
+/** 
+ * Function 
+ */
+
+//Responsible for building the Date object
+function dateConstruction(year: number, month: number, day: number, isCurrentMonth = false):Date{
+    let date = {} as Date;    
+    date.year = year;
+    date.month = month;
+    date.day = day;
+    date.isCurrentMonth = isCurrentMonth;   
+    return date;
+}
+
+//Check if the day is a day off
+function isDayOff(date: Date): boolean{
+    let dayOff: MonthsWithDaysOff = {
+            date: `${date.year}-${date.month}`,
+            days: []
+        }
+
+    let daysOff: MonthsWithDaysOff[] = props.daysOffList;
+
+    if(daysOff){    
+        let isCurrentMonth = !!daysOff.find(element => {
+            return element.date == dayOff.date;
+        }) 
+        
+        if(isCurrentMonth){
+            let currentMonth = daysOff.filter((element) => {
+                return element.date === dayOff.date
+            })
+            for(let day of currentMonth[0].days){
+                if(date.day === day){
+                    return true;
+                }
+            }
+        }
+        return false
+    } 
+
+    return false
+}
+
+//Check if the day is a holiday
+function isHoliday(date: Date) {
+    let month: string = date.month < 10 ? "0" + date.month : "" + date.month;
+    let day: string = date.day < 10 ? "0" + date.day : "" + date.day;
+    let dateStr: string = `${date.year}-${month}-${day}`;
+    let holidays: Holiday[] = props.holidayList;
+
+     return !!holidays.find((item) => {
+            return  item.date == dateStr;
+        });
+}
+
+//responsible for keeping the count of days off in the correct months
+function expectedDays(){
+    const year = viewState.year.value;
+    const month = viewState.month.value;
+    let monthsWithDaysOff: MonthsWithDaysOff[] = props.daysOffList
+
+    let currentMonth = monthsWithDaysOff.filter((element) => {
+            return element.date === `${year}-${month}`})
+
     if(currentMonth.length > 0){
         emit("expectedDaysForMonth", expectedDaysValue.value - currentMonth[0].days.length);
     }else{
         emit("expectedDaysForMonth", expectedDaysValue.value);
     }
+}
 
-    //days of next month
-    let calendarLength = 42;
-    let remainingSpace = calendarLength - days.length;
-    for (let i = 1; i <= remainingSpace ; i++) {
-        let date = {} as Date;
-
-        date.day = i;
-        date.month = viewState.month.value + 1;
-        date.year = viewState.month.value == 12 ? viewState.year.value + 1 : viewState.year.value;
-        date.isCurrentMonth = false;
-        checkHoliday(date);
-        checkDayOff(date);
-        days.push(date);
-    }
-    dates.value = [...days as never];
-    return separatingDaysIntoWeeks(days);
-});
-
-function separatingDaysIntoWeeks(days: Array<Date>) {
+//separating the days into weeks
+function separatingDaysIntoWeeks(days: Date[]) {
     const weeks = [];
     let week: any = [];
 
-    days.forEach((day) => {
+    for(let day of days){
         week.push(day);
         if (week.length === 7) {
             weeks.push(week);
             week = [];
         }
-    });
+    }
+
     if (week.length > 0) {
         weeks.push(week);
     }
@@ -198,21 +228,21 @@ function separatingDaysIntoWeeks(days: Array<Date>) {
 
 
 function selectCalendarDay(date: Date){
-    let daysOff: Array<DaysOff> = props.daysOffList;
-    let dayOff: DaysOff = {
+    let monthsWithDaysOff: MonthsWithDaysOff[] = props.daysOffList;
+    let dayOff: MonthsWithDaysOff = {
             date: `${date.year}-${date.month}`,
             days: []
         }
       
-    let isSameMonth = !!daysOff.find(element => {
+    let isCurrentMonth = !!monthsWithDaysOff.find(element => {
         return element.date == dayOff.date;
      }) 
         
-    if(!isSameMonth){
+    if(!isCurrentMonth){
         dayOff.days.push(date.day);
-        daysOff.push(dayOff);
+        monthsWithDaysOff.push(dayOff);
     }else{
-        let currentMonth = daysOff.filter((element) => {
+        let currentMonth = monthsWithDaysOff.filter((element) => {
             return element.date === dayOff.date
         })
 
@@ -231,14 +261,14 @@ function selectCalendarDay(date: Date){
 
 
         //generating a new lsit of daysOff without the item that has changed and adding the new item in its place.
-        daysOff = daysOff.filter((element) => {
+        monthsWithDaysOff = monthsWithDaysOff.filter((element) => {
             return element.date !== dayOff.date
         })
 
-        daysOff.push(currentMonth[0])
+        monthsWithDaysOff.push(currentMonth[0])
     }
             
-        emit("daysOff", daysOff);  
+        emit("daysOff", monthsWithDaysOff);  
     
 }
 
@@ -246,18 +276,22 @@ function setClass(date: Date){
     if(date.isHoliday){
         return 'holiday';
     }
-    if(date.isSelected){
-        return 'isSelected';
+    if(date.isDayOff){
+        return 'isDayOff';
+    }
+    if(date.isCurrentMonth){
+        return 'current-month'
+    }else{
+        return 'no-current-month'
     }
    
 }
 </script>
 
 <template>
-    <div id="container">
+    <div id="container-calendar">
         <h1>Calendário</h1>
-        <div id="input-container">
-            <div id="input-container">
+            <div id="input-container-calendar">
                 <div class="input-wrapper">
                     <div>
                         <label :class="viewState.year.error ? 'input-label-erro' : 'input-label'" for="year">Ano:</label>
@@ -265,7 +299,7 @@ function setClass(date: Date){
                             viewState.year.error ? 'custom-input-error' : 'custom-input'
                         " v-model="viewState.year.value" @input="viewState.year.validation" />
                     </div>
-                    <label v-if="viewState.year.error" class="label-error">{{
+                    <label v-if="viewState.year.error" class="error-message">{{
                         viewState.year.error
                     }}</label>
                 </div>
@@ -278,7 +312,7 @@ function setClass(date: Date){
                             viewState.month.error ? 'custom-input-error' : 'custom-input'
                         " id="month" v-model="viewState.month.value" @input="viewState.month.validation" />
                     </div>
-                    <label v-if="viewState.month.error" class="label-error">{{
+                    <label v-if="viewState.month.error" class="error-message">{{
                         viewState.month.error
                     }}</label>
                 </div>
@@ -289,11 +323,10 @@ function setClass(date: Date){
                             viewState.day.error ? 'custom-input-error' : 'custom-input'
                         " id="day" v-model="viewState.day.value" @input="viewState.day.validation" />
                     </div>
-                    <label v-if="viewState.day.error" class="label-error">{{
+                    <label v-if="viewState.day.error" class="error-message">{{
                         viewState.day.error
                     }}</label>
                 </div>
-            </div>
         </div>
 
         <table>
@@ -310,8 +343,8 @@ function setClass(date: Date){
             </thead>
             <tbody>
                 <tr v-for="week in daysGenerator" :key="week[0]">
-                    <td :class="day.isCurrentMonth ? 'current-month' : 'no-current-month'" v-for="day in week" :key="day" @click="selectCalendarDay(day)">
-                        <div :class="setClass(day)">{{ day.day }}</div>
+                    <td :class="setClass(day)" v-for="day in week" :key="day" @click="selectCalendarDay(day)">
+                       {{ day.day }}
                     </td>
                 </tr>
             </tbody>
@@ -320,13 +353,20 @@ function setClass(date: Date){
 </template>
   
 <style scoped>
-#container {
+#container-calendar {
     display: flex;
     max-width: 800px;
     flex-direction: column;
     line-height: 1.125em;
-    text-align: center;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    height: 500px;
+    flex-wrap: wrap;
+    background-color: var( --pontotel-white);
+    border-radius: 8px;
+    line-height: 1.125em;
     padding-bottom: 32px;
+    justify-content: center;
 }
 
 h1 {
@@ -335,9 +375,10 @@ h1 {
     font-size: 32px;
 }
 
-#input-container {
+#input-container-calendar {
     display: flex;
-    margin: 0 auto;
+    justify-content: center;
+    /* margin: 0 auto; */
 }
 
 table {
@@ -354,23 +395,23 @@ th {
     color: var(--pontotel-light-blue);
 }
 
-.day-clicked {
-    background-color: rgba(103, 181, 211, 0.1);
-    color: var(--pontotel-light-blue);
+.current-month:hover {
+    background-color: var(--pontotel-light-blue);
+    color: var(--pontotel-black);
 }
 
+
 .no-current-month {
-    color: #777;
+    color: var(--pontotel-gray);
 }
 
 .holiday {
     background-color: var(--pontotel-orange);
-    border-radius: 8px;
+    color: var(--pontotel-black);
 }
-.isSelected {
-    background-color: var(--pontotel-red);
-    border-radius: 8px;
-    color: var(--pontotel-gray);
+.isDayOff {
+    background-color: var(--pontotel-violet);
+    color: var(--pontotel-white);
 }
 
 /* input style */
@@ -385,6 +426,10 @@ th {
     border: none;
     background-color: transparent;
     font-size: 16px;
+    outline: 0px;
+}
+.custom-input-error:focus-visible {
+    outline: 0px;
 }
 
 .custom-input {
@@ -395,13 +440,18 @@ th {
     font-size: 16px;
     color: #333;
 }
-.label-error {
+
+.custom-input:focus-visible {
+    outline: 0px;
+}
+
+.error-message {
     color: var(--pontotel-red);
     width: 60px;
     padding: 10px;
     border: none;
     background-color: transparent;
-    font-size: 10px;
+    font-size: 16px;
 }
 
 

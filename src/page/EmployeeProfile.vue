@@ -108,7 +108,6 @@ const viewState = reactive({
 })
 
 function handleExpectedDays(value: number){
-    console.log("emitou: ", value)
     viewState.employee.expectedHoursForMonth = value * 8;
 }
 
@@ -119,30 +118,35 @@ function handleDaysOff(value: Array<never>){
 </script>
 
 <template>
-  <div id="container">
-      <EmployeeCard 
-        :employee-name="viewState.employee.name" 
-        :employee-picture="viewState.employee.picture" 
-        :employee-position="viewState.employee.position" 
-        :expected-hours-for-month="viewState.employee.expectedHoursForMonth"
-        :expected-hours-for-day="viewState.employee.expectedHoursForDay"/>
-      <Calendar :days-off-list="viewState.employee.daysOff" :holiday-list="json" @expected-days-for-month="handleExpectedDays" @days-off="handleDaysOff"/>
-  </div>
+    <div id="container-employeer-profile">
+        <div id="wrapper-employeer-profile">
+            <EmployeeCard 
+              :employee-name="viewState.employee.name" 
+              :employee-picture="viewState.employee.picture" 
+              :employee-position="viewState.employee.position" 
+              :expected-hours-for-month="viewState.employee.expectedHoursForMonth"
+              :expected-hours-for-day="viewState.employee.expectedHoursForDay"/>
+            <Calendar :days-off-list="viewState.employee.daysOff" :holiday-list="json" @expected-days-for-month="handleExpectedDays" @days-off="handleDaysOff"/>
+        </div>
+    </div>
 </template>
 
 <style scoped>
-#container {
+#container-employeer-profile {
+    max-width: 100%;
     display: flex;
-    width: 100%;
-    height: 500px;
+    align-content: center;
+    flex-direction: column;
+}
+#wrapper-employeer-profile {
+    display: flex;
     flex-wrap: wrap;
-    background-color: white;
     border-radius: 8px;
-    /* box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2); */
     line-height: 1.125em;
     text-align: center;
     padding-bottom: 32px;
-    justify-content: center;
+    justify-content: space-evenly;
+    align-content: center;
 }
 
 </style>

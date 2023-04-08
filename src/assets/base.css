@@ -5,7 +5,10 @@
   --pontotel-light-blue-40: rgba(103,181,211 .4);
   --pontotel-orange: #ffcb49;
   --pontotel-white-gray: #f8f8fa;
+  --pontotel-white: #fff;
   --pontotel-gray: #777;
+  --pontotel-black: #000;
+  --pontotel-violet: blueviolet;
 }
 
 @font-face{

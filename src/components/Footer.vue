@@ -2,15 +2,15 @@
 </script>
 
 <template>
-    <div id="container-header"></div>
+    <div id="container-footer"></div>
 
 </template>
 
 <style scoped>
-    #container-header{
+    #container-footer{
         background-color: var(--pontotel-light-blue);
         width: 100%;
-        height: 60px;
-        margin-bottom: 50px;
+        height: 300px;
+        margin-top: 150px;
     }
 </style>
