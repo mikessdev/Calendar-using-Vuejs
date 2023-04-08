@@ -22,18 +22,18 @@ const props = defineProps({
 </script>
 
 <template>
-  <div id="employeeCard">
+  <div id="employee-card">
     <EmployeePicture :employee-picture="props.employeePicture"/>
-    <h2>
+    <h2 id="employee-card-name" class="employee-card-text">
       {{ props.employeeName }}
     </h2>
-    <p>
+    <p id="employee-card-hole" class="employee-card-text">
       {{ props.employeePosition }}
     </p>
-    <p>
+    <p id="employee-week" class="employee-card-text">
       Escala semanal
     </p>
-    <div>
+    <div id="days-of-week">
       <p>Dom</p>
       <p>Seg</p>
       <p>Ter</p>
@@ -42,17 +42,46 @@ const props = defineProps({
       <p>Sex</p>
       <p>Sáb</p>
     </div>
-    <p>São esperados {{ expectedHoursForDay }}h de trabalho por dia!</p>
-    <p>São esperados {{ expectedHoursForMonth }}h mensais de trabalho para o colaborador!</p>
+    <p class="employee-card-text">São esperados {{ expectedHoursForDay }}h de trabalho por dia!</p>
+    <p class="employee-card-text">São esperados {{ expectedHoursForMonth }}h mensais de trabalho para o colaborador!</p>
     
   </div>
 </template>
 
 <style scoped>
-  #employeeCard {
+  #employee-card {
     display: flex;
     width: 300px;
     flex-direction: column;
     align-items: center;
+    padding-bottom: 32px;
+  }
+
+  .employee-card-text{
+  margin-top: 10px;
+  }
+  #employee-card-name {
+    margin-top: 32px;
+    margin-bottom: 20px;
+  }
+
+  #days-of-week{
+    display: flex;
+  }
+
+  #employee-week {
+    margin-top: 32px;
+    border-bottom-style: dashed;
+    border-bottom-width: 4px;
+    border-bottom-color: var(--pontotel-light-blue);
+  }
+
+  #days-of-week p{
+    margin: 10px 10px 0px 10px;
+  }
+  #employee-card-hole{
+    background-color: var(--pontotel-orange);
+    color: var(--pontotel-black);
+    padding: 10px 20px;
   }
 </style>

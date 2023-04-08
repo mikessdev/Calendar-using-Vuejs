@@ -86,9 +86,6 @@ const daysGenerator = computed(() => {
             viewState.month.value - 1, 
             viewState.year.value == 1 ? viewState.year.value - 1 : viewState.year.value, 
             day);
-
-        date.isHoliday = isHoliday(date);  
-        date.isDayOff = isDayOff(date);
         days.push(date);
     }
 
@@ -100,9 +97,6 @@ const daysGenerator = computed(() => {
             viewState.year.value, 
             viewState.month.value, day, 
             isCurrentMonth);
-
-        date.isHoliday = isHoliday(date);
-        date.isDayOff = isDayOff(date);
         days.push(date);
 
         let dayOfWeek = daysOfWeek[new Date(`${viewState.year.value}-${viewState.month.value}-${day}`).getDay()];
@@ -126,9 +120,6 @@ const daysGenerator = computed(() => {
             viewState.month.value == 12 ? viewState.year.value + 1 : viewState.year.value, 
             viewState.month.value + 1, 
             day)
-            
-        date.isHoliday = isHoliday(date);  
-        date.isDayOff = isDayOff(date);
         days.push(date);
     }
     return separatingDaysIntoWeeks(days);
@@ -145,7 +136,9 @@ function dateConstruction(year: number, month: number, day: number, isCurrentMon
     date.year = year;
     date.month = month;
     date.day = day;
-    date.isCurrentMonth = isCurrentMonth;   
+    date.isCurrentMonth = isCurrentMonth;
+    date.isHoliday = isHoliday(date);  
+    date.isDayOff = isDayOff(date);   
     return date;
 }
 
@@ -199,7 +192,6 @@ function expectedDays(){
 
     let currentMonth = monthsWithDaysOff.filter((element) => {
             return element.date === `${year}-${month}`})
-
     if(currentMonth.length > 0){
         emit("expectedDaysForMonth", expectedDaysValue.value - currentMonth[0].days.length);
     }else{
@@ -226,53 +218,81 @@ function separatingDaysIntoWeeks(days: Date[]) {
     return weeks;
 }
 
-
+//responsible for selecting dates and emit them
 function selectCalendarDay(date: Date){
     let monthsWithDaysOff: MonthsWithDaysOff[] = props.daysOffList;
-    let dayOff: MonthsWithDaysOff = {
+    let mounthOfdayOff: MonthsWithDaysOff = {
             date: `${date.year}-${date.month}`,
-            days: []
+            days: [date.day]
         }
       
-    let isCurrentMonth = !!monthsWithDaysOff.find(element => {
-        return element.date == dayOff.date;
-     }) 
         
-    if(!isCurrentMonth){
-        dayOff.days.push(date.day);
-        monthsWithDaysOff.push(dayOff);
-    }else{
-        let currentMonth = monthsWithDaysOff.filter((element) => {
-            return element.date === dayOff.date
-        })
+    if(!date.isHoliday){
 
-        let dataIsSelected = !!currentMonth[0].days.find(element => {
-        return element == date.day;
-        }) 
+         let isCurrentMonth = !!monthsWithDaysOff.find(element => {
+             return element.date == mounthOfdayOff.date;
+          }) 
 
-        if(dataIsSelected){
-            let currentdate = currentMonth[0].days.filter(element => {
-            return element !== date.day;
-        })
-        currentMonth[0].days = currentdate;
+        if(!isCurrentMonth){
+            monthsWithDaysOff.push(mounthOfdayOff);
         }else{
-            currentMonth[0].days.push(date.day)
-        }
-
-
-        //generating a new lsit of daysOff without the item that has changed and adding the new item in its place.
-        monthsWithDaysOff = monthsWithDaysOff.filter((element) => {
-            return element.date !== dayOff.date
-        })
-
-        monthsWithDaysOff.push(currentMonth[0])
-    }
+            let currentMonth = findMonthBelongsToDate(monthsWithDaysOff, mounthOfdayOff)[0];
             
-        emit("daysOff", monthsWithDaysOff);  
-    
+            dateIsSelected(currentMonth, date) ? 
+            currentMonth.days = removeDayOff(currentMonth, date) : 
+            currentMonth = addNewDayOff(currentMonth, date);
+
+            monthsWithDaysOff = monthsWithDaysOff.filter((item) => {
+                return item.date !== mounthOfdayOff.date
+            })
+
+            monthsWithDaysOff.push(currentMonth)
+        }
+            emit("daysOff", monthsWithDaysOff);                  
+     }
 }
 
+//check if the date is selected
+function dateIsSelected(currentMonth: MonthsWithDaysOff, date: Date){
+    return !!currentMonth.days.find(element => {
+            return element == date.day;
+        }) 
+}
+
+
+//find the month corresponding to the date
+function findMonthBelongsToDate(monthsWithDaysOff: MonthsWithDaysOff[], mounthOfdayOff: MonthsWithDaysOff){
+    return monthsWithDaysOff.filter((element) => {
+            return element.date === mounthOfdayOff.date
+        })
+}
+
+//add new day off
+function addNewDayOff(currentMonth: MonthsWithDaysOff, date: Date){
+    currentMonth.days.push(date.day)
+    return currentMonth;
+}
+
+// remove day off
+function removeDayOff(mounthOfdayOff: MonthsWithDaysOff, date: Date){
+    return mounthOfdayOff.days.filter(element => { return element !== date.day;})
+}
+
+// set class
 function setClass(date: Date){
+    let dateStr = `${date.year}-${date.month}-${date.day}`; 
+    let dateState = `${viewState.year.value}-${viewState.month.value}-${viewState.day.value}`; 
+
+    if(dateStr === dateState){
+        if(date.isDayOff){
+            return 'today-isDayOff';
+        }else if(date.isHoliday) {
+            return 'today-holiday';
+
+        }else{
+            return 'today';
+        }
+    }
     if(date.isHoliday){
         return 'holiday';
     }
@@ -396,7 +416,7 @@ th {
 }
 
 .current-month:hover {
-    background-color: var(--pontotel-light-blue);
+    background-color: var(--pontotel-light-red);
     color: var(--pontotel-black);
 }
 
@@ -409,8 +429,29 @@ th {
     background-color: var(--pontotel-orange);
     color: var(--pontotel-black);
 }
+.today {
+    border-bottom-style: groove;
+    border-bottom-color: var(--pontotel-black);
+    color: var(--pontotel-light-blue);
+}
+.today-holiday {
+    border-bottom-style: groove;
+    border-bottom-color: var(--pontotel-black);
+    background-color: var(--pontotel-orange);
+    color: var(--pontotel-black);
+}
+.today-isDayOff {
+    border-bottom-style: groove;
+    border-bottom-color: var(--pontotel-black);
+    background-color: var(--pontotel-red);
+    color: var(--pontotel-white);
+}
+.today:hover {
+    background-color: var(--pontotel-light-violet);
+    color: var(--pontotel-black);
+}
 .isDayOff {
-    background-color: var(--pontotel-violet);
+    background-color: var(--pontotel-red);
     color: var(--pontotel-white);
 }
 
